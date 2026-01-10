@@ -7,13 +7,13 @@ from rest_framework.response import Response
 from rest_framework import status
 
 from github_bot.settings import GITHUB_WEBHOOK_SECRET
-from webhooks.github_api import comment_on_pr
+from webhooks.github_api import comment_on_pr, get_pr_changes_from_webhook
 
 @api_view(["POST"])
 def github_webhook(request):
     signature = request.headers.get("X-Hub-Signature-256")
     payload = request.body
-    print("Event recieved")
+    print("Event received")
 
     expected = "sha256=" + hmac.new(
         GITHUB_WEBHOOK_SECRET.encode(),
@@ -29,6 +29,7 @@ def github_webhook(request):
 
     if event == "pull_request" and data["action"] == "opened":
         print("PR opened:", data["pull_request"]["title"])
+        print(get_pr_changes_from_webhook(data))
         comment_on_pr(data) 
 
     return Response(status=status.HTTP_200_OK)

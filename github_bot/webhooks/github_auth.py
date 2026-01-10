@@ -1,6 +1,5 @@
 import jwt
 import time
-from django.conf import settings
 
 from github_bot.settings import GITHUB_APP_ID, GITHUB_PRIVATE_KEY_PATH
 
