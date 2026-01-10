@@ -4,6 +4,7 @@ from .github_auth import generate_jwt
 
 
 def get_installation_token(installation_id):
+    # TODO: Add singleton class to manage token creation instead of generating new token for every request
     jwt_token = generate_jwt()
 
     url = f"https://api.github.com/app/installations/{installation_id}/access_tokens"
@@ -16,8 +17,36 @@ def get_installation_token(installation_id):
     res = requests.post(url, headers=headers)
     return res.json()["token"]
 
+def make_review(changes: str, name: str, prompt_template: str):
+    # Code to run the prompt through ML model
+    # Mocking the model output as a single comment instead of proper review due to lack of time
+    sections = []
 
-def comment_on_pr(data):
+    for change in changes:
+        section = [
+            f"File: {change['filename']}",
+            f"Status: {change['status']}",
+            f"Additions: {change['additions']}, Deletions: {change['deletions']}",
+        ]
+
+        if change.get("patch"):
+            section.append("Changes:")
+            section.append(change["patch"])
+        else:
+            section.append("Changes: (diff not available)")
+
+        sections.append("\n".join(section))
+
+    string_changes = "\n\n---\n\n".join(sections)
+
+    prompt_template.replace('{/changes}/', string_changes)
+    additions = sum(file["additions"] for file in changes)
+    deletions = sum(file["deletions"] for file in changes)
+    output = f"Total {additions} addition and {deletions} deletions reviewed by: {name}"
+    return output
+
+
+def comment_on_pr(data, output: str):
     token = get_installation_token(data["installation"]["id"])
     pr = data["pull_request"]
 
@@ -27,7 +56,7 @@ def comment_on_pr(data):
         "Accept": "application/vnd.github+json",
     }
 
-    requests.post(url, json={"body": "PR received!"}, headers=headers)
+    requests.post(url, json={"body": output}, headers=headers)
 
 
 def get_pr_changes_from_webhook(data):

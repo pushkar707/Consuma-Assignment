@@ -7,7 +7,13 @@ from django.shortcuts import get_object_or_404
 from .models import Bot
 from .serializers import BotSerializer
 
-class BotCreateAPIView(APIView):
+
+class BotListAPIView(APIView):
+    def get(self, request):
+        bots = Bot.objects.filter(deleted_at__isnull=True)
+        serializer = BotSerializer(bots, many=True)
+        return Response(serializer.data)
+
     def post(self, request):
         serializer = BotSerializer(data=request.data)
         if serializer.is_valid():
@@ -19,14 +25,7 @@ class BotCreateAPIView(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-class BotListAPIView(APIView):
-    def get(self, request):
-        bots = Bot.objects.filter(deleted_at__isnull=True)
-        serializer = BotSerializer(bots, many=True)
-        return Response(serializer.data)
-
-
-class BotUpdateAPIView(APIView):
+class BotDetailAPIView(APIView):
     def put(self, request, bot_id):
         bot = get_object_or_404(Bot, id=bot_id, deleted_at__isnull=True)
         serializer = BotSerializer(bot, data=request.data)
@@ -43,7 +42,6 @@ class BotUpdateAPIView(APIView):
             return Response(BotSerializer(bot).data)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-class BotDeleteAPIView(APIView):
     def delete(self, request, bot_id):
         bot = get_object_or_404(Bot, id=bot_id, deleted_at__isnull=True)
         bot.delete()
