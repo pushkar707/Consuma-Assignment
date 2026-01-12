@@ -4,7 +4,6 @@ from .github_auth import generate_jwt
 
 
 def get_installation_token(installation_id):
-    # TODO: Add singleton class to manage token creation instead of generating new token for every request
     jwt_token = generate_jwt()
 
     url = f"https://api.github.com/app/installations/{installation_id}/access_tokens"

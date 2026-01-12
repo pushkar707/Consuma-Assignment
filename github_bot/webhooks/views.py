@@ -15,7 +15,6 @@ from webhooks.github_api import comment_on_pr, get_pr_changes_from_webhook, make
 def github_webhook(request):
     signature = request.headers.get("X-Hub-Signature-256")
     payload = request.body
-    print("Event received")
 
     expected = (
         "sha256="
